@@ -25,6 +25,7 @@
   
   /* Styles for the search input */
   .search-bar-container7 input {
+    margin: 14px 0px  ;
     padding: 10px;
     width: 100px;
     border: none;
@@ -33,11 +34,13 @@
     font-weight: 400;
     font-size: 13px;
     color: #666666;
+    
     background-color: transparent;
   }
   
   /* Styles for the search dropdown */
   .search-dropdown7 {
+    margin-top: 14px;
     padding: 25px;
     width: 150px;
     border: none;

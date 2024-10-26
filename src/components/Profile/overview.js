@@ -15,7 +15,7 @@ const SingleComponent = () => {
 
   const fetchData = async () => {
     try {
-      const branchesSnapshot = await getDocs(collection(db, 'branches'));
+      const branchesSnapshot = await getDocs(collection(db, ''));
 
       const branches = branchesSnapshot.docs.map(doc => {
         const data = doc.data();
@@ -58,7 +58,7 @@ const SingleComponent = () => {
       }));
       setSubscriptionsData(formattedSubscriptionsData);
 
-      const activitySnapshot = await getDocs(collection(db, 'activityLogs'));
+      const activitySnapshot = await getDocs(collection(db, ''));
 
       const activity = activitySnapshot.docs.map(doc => {
         const data = doc.data();

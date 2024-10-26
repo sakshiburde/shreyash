@@ -9,6 +9,7 @@ import search from '../../../assets/Search.png';
 import { FaSearch, FaDownload, FaUpload, FaPlus, FaEdit, FaTrash, FaCopy } from 'react-icons/fa';
 import Papa from 'papaparse';
 import './Availability.css'; // Create CSS for styling
+import { format } from 'date-fns';
 
 
 const BookingDashboard = () => {
@@ -41,35 +42,50 @@ const BookingDashboard = () => {
     const fetchAllBookingsWithUserDetails = async () => {
       setLoading(true); // Start loading
       try {
+        const todayDateStr = new Date().toDateString(); // Get today's date as a string
         const q = query(
           collection(db, 'products'),
           where('branchCode', '==', userData.branchCode)
         );
-        const productsSnapshot = await getDocs(q) ;
-        
+        const productsSnapshot = await getDocs(q);
+
         let allBookings = [];
-  
+
         for (const productDoc of productsSnapshot.docs) {
           const productCode = productDoc.data().productCode;
           const bookingsRef = collection(productDoc.ref, 'bookings');
           const bookingsQuery = query(bookingsRef, orderBy('pickupDate', 'asc'));
           const bookingsSnapshot = await getDocs(bookingsQuery);
-          
-  
-          bookingsSnapshot.forEach((doc) => {
-            const bookingData = doc.data();
-            const { 
-              bookingId, 
-              receiptNumber, 
-              pickupDate, 
-              returnDate, 
-              quantity, 
-              userDetails, 
+
+          for (const docSnapshot of bookingsSnapshot.docs) {
+            const bookingData = docSnapshot.data();
+            const {
+              bookingId,
+              receiptNumber,
+              pickupDate,
+              returnDate,
+              quantity,
+              userDetails,
               createdAt,
-              
-              
             } = bookingData;
-  
+
+            const pickupDateStr = pickupDate.toDate().toDateString();
+            const returnDateStr = returnDate.toDate().toDateString();
+            
+            // Check if pickupDate matches today's date and if stage needs to be updated
+            if (pickupDateStr === todayDateStr && userDetails.stage ==='Booking') {
+              await updateDoc(doc(db, `products/${productDoc.id}/bookings/${docSnapshot.id}`), {
+                'userDetails.stage': 'pickupPending',
+              });
+              userDetails.stage = 'pickupPending'; // Update locally for immediate display
+            }
+            if (returnDateStr === todayDateStr && userDetails.stage ==='pickup') {
+              await updateDoc(doc(db, `products/${productDoc.id}/bookings/${docSnapshot.id}`), {
+                'userDetails.stage': 'returnPending',
+              });
+              userDetails.stage = 'returnPending'; // Update locally for immediate display
+            }
+
             allBookings.push({
               bookingId,
               receiptNumber,
@@ -77,27 +93,25 @@ const BookingDashboard = () => {
               contactNo: userDetails.contact,
               email: userDetails.email,
               pickupDate: pickupDate.toDate(),
-              returnDate: returnDate.toDate() ,
-              createdAt:createdAt || null,
-              
-              
+              returnDate: returnDate.toDate(),
+              createdAt: createdAt || null,
               stage: userDetails.stage,
-              products: [{ productCode, quantity: parseInt(quantity, 10) },], // Store product codes with quantities
+              products: [{ productCode, quantity: parseInt(quantity, 10) }],
             });
-          });
+          }
         }
-  
+
         // Group bookings by receiptNumber
         const groupedBookings = allBookings.reduce((acc, booking) => {
           const { receiptNumber, products } = booking;
           if (!acc[receiptNumber]) {
-            acc[receiptNumber] = { ...booking, products: [...products] }; // Copy products array
+            acc[receiptNumber] = { ...booking, products: [...products] };
           } else {
-            acc[receiptNumber].products.push(...products); // Merge products arrays
+            acc[receiptNumber].products.push(...products);
           }
           return acc;
         }, {});
-  
+
         // Convert grouped bookings object to array
         setBookings(Object.values(groupedBookings));
       } catch (error) {
@@ -106,10 +120,10 @@ const BookingDashboard = () => {
         setLoading(false); // End loading
       }
     };
-  
+
     fetchAllBookingsWithUserDetails();
   }, [userData.branchCode]);
-  
+ 
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this booking?")) {
@@ -260,71 +274,71 @@ const BookingDashboard = () => {
     return booking.stage === stageFilter; // Match booking stage
   });
   
-
   const handleStageChange = async (receiptNumber, newStage) => {
     try {
-      // Find the booking to update based on receiptNumber
-      const bookingToUpdate = bookings.find(
-        (booking) => booking.receiptNumber === receiptNumber
-      );
-  
-      if (!bookingToUpdate) {
-        console.error('Booking not found');
-        return;
-      }
-  
-      // Extracting productCode and bookingId
-      const bookingId = String(bookingToUpdate.bookingId);
-      const products = bookingToUpdate.products; // Get all products
-  
-      // Log values to check their types and the document path
-      console.log('Receipt Number:', receiptNumber, 'Type:', typeof receiptNumber);
-  
-      // Loop through all products
-      for (const product of products) {
-        const productCode = product.productCode; // Get product code
-        const bookingsRef = collection(db, `products/${productCode}/bookings`);
-        const q = query(bookingsRef, where("receiptNumber", "==", receiptNumber));
-        const querySnapshot = await getDocs(q);
-  
-        // Check if any documents were found
-        if (querySnapshot.empty) {
-          console.error('No documents found for bookingId:', bookingId);
-          // Create a new document if needed
-          const bookingDocRef = doc(bookingsRef, bookingId); // Create a new reference
-          await setDoc(bookingDocRef, {
-            userDetails: {
-              stage: newStage,
-              // Include other default values as necessary
-            },
-            // Include other relevant fields from bookingToUpdate if needed
-          });
-  
-          console.log('Document created successfully for product:', productCode, 'at path:', bookingDocRef.path);
-        } else {
-          // Reference to the specific booking document inside Firestore
-          const bookingDocRef = querySnapshot.docs[0].ref;
-  
-          // Update the booking stage in Firestore
-          await updateDoc(bookingDocRef, { 'userDetails.stage': newStage });
-          console.log('Stage updated successfully for product:', productCode);
+        // Find the booking to update based on receiptNumber from all bookings
+        const bookingToUpdate = finalFilteredBookings.find(
+            (booking) => booking.receiptNumber === receiptNumber
+        );
+
+        if (!bookingToUpdate) {
+            console.error('Booking not found');
+            return;
         }
-      }
-  
-      // Update the state to reflect the change in the UI
-      setBookings((prevBookings) =>
-        prevBookings.map((booking) =>
-          booking.receiptNumber === receiptNumber
-            ? { ...booking, stage: newStage }
-            : booking
-        )
-      );
-  
+
+        // Extracting necessary information from the booking
+        const bookingId = String(bookingToUpdate.bookingId);
+        const products = bookingToUpdate.products;
+        const pickUpDate = bookingToUpdate.pickupDate; // Ensure you are using the correct property name
+        const currentStage = bookingToUpdate.stage;
+
+        // Check if pickUpDate is today
+        
+
+        // Loop through all products
+        for (const product of products) {
+            const productCode = product.productCode;
+            const bookingsRef = collection(db, `products/${productCode}/bookings`);
+            const q = query(bookingsRef, where("receiptNumber", "==", receiptNumber));
+            const querySnapshot = await getDocs(q);
+
+            // Check if any documents were found
+            if (querySnapshot.empty) {
+                console.error('No documents found for bookingId:', bookingId);
+                // Create a new document if needed
+                const bookingDocRef = doc(bookingsRef, bookingId);
+                await setDoc(bookingDocRef, {
+                    userDetails: {
+                        stage: newStage,
+                        // Include other default values as necessary
+                    },
+                    // Include other relevant fields from bookingToUpdate if needed
+                });
+
+                console.log('Document created successfully for product:', productCode, 'at path:', bookingDocRef.path);
+            } else {
+                // Reference to the specific booking document inside Firestore
+                const bookingDocRef = querySnapshot.docs[0].ref;
+
+                // Update the booking stage in Firestore
+                await updateDoc(bookingDocRef, { 'userDetails.stage': newStage });
+                console.log('Stage updated successfully for product:', productCode);
+            }
+        }
+
+        // Update the state to reflect the change in the UI
+        setBookings((prevBookings) =>
+            prevBookings.map((booking) =>
+                booking.receiptNumber === receiptNumber
+                    ? { ...booking, stage: newStage }
+                    : booking
+            )
+        );
     } catch (error) {
-      console.error('Error updating stage:', error);
+        console.error('Error updating booking stage:', error);
     }
-  };
-  
+};
+
 
   return (
     <div className={`dashboard-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
@@ -337,11 +351,13 @@ const BookingDashboard = () => {
         <div className="filter-container">
           <button onClick={() => setStageFilter('all')}>All</button>
           <button onClick={() => setStageFilter('Booking')}>Booking </button>
-          <button onClick={() => setStageFilter('pickup')}>Pick Up</button>
           <button onClick={() => setStageFilter('pickupPending')}>Pickup Pending</button>
-          <button onClick={() => setStageFilter('return')}>Return</button>
+          <button onClick={() => setStageFilter('pickup')}>Picked Up</button>
           <button onClick={() => setStageFilter('returnPending')}>Return Pending</button>
+          <button onClick={() => setStageFilter('return')}>Returned</button>
+          <button onClick={() => setStageFilter('successful')}>Successful</button>
           <button onClick={() => setStageFilter('cancelled')}>Cancelled</button>
+          <button onClick={() => setStageFilter('postponed')}>Postponed / Credit note</button>
         </div>
 
         <div className="toolbar-container">
@@ -352,7 +368,7 @@ const BookingDashboard = () => {
               onChange={(e) => setSearchField(e.target.value)}
               className="search-dropdown7"
             >
-             
+                
                 <option value="receiptNumber">Receipt Number</option>
                 <option value ="bookingcreation">Booking Creation</option>
                 <option value="username">Clients Name</option>
@@ -419,9 +435,17 @@ const BookingDashboard = () => {
                 </thead>
                 <tbody>
                   {finalFilteredBookings.map((booking) => (
-                    <tr key={`${booking.receiptNumber}`} onClick={() => handleBookingClick(booking)}>
+                    <tr key={`${booking.receiptNumber}`} >
 
-                      <td>{booking.receiptNumber}</td>
+                      <td>
+                              {/* Make only the receipt number clickable */}
+                              <span
+                                
+                                onClick={() => handleBookingClick(booking)}
+                              >
+                                {booking.receiptNumber}
+                              </span>
+                            </td>
                       <td>
                           {booking.createdAt ? booking.createdAt.toDate().toLocaleString() : 'N/A'}
                       </td>
@@ -447,10 +471,14 @@ const BookingDashboard = () => {
                         >
                           <option value="Booking">Booking</option>
                           <option value="pickupPending">Pickup Pending</option>
-                          <option value="pickup">Pick Up</option>
+                          <option value="pickup">Picked Up</option>
                           <option value="returnPending">Return Pending</option>
-                          <option value="return">Return</option>
+                          <option value="return">Returned</option>
+                          <option value="successful">Successful</option>
+
                           <option value="cancelled">Cancelled</option>
+                          <option value="postponed">Postponed</option>
+
                         </select>
                       </td>
                       

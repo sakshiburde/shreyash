@@ -213,6 +213,13 @@ const App = () => (
             <BookingDashboard />
           </PrivateRoute>
         } />
+         <Route path="/usersidebar/clients" element={
+          <PrivateRoute>
+            <BookingDashboard />
+          </PrivateRoute>
+        } />
+        
+        
 
         <Route path="/usersidebar/dashboard" element={
           <PrivateRoute>

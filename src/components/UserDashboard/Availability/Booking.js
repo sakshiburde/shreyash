@@ -1055,7 +1055,7 @@ useEffect(() => {
               type="email"
               value={userDetails.email}
               onChange={(e) => setUserDetails({ ...userDetails, email: e.target.value })}
-              required
+              
              />
             </div>
             </div>
@@ -1077,7 +1077,7 @@ useEffect(() => {
              type="text"
              value={userDetails.alternativecontactno}
              onChange={(e) => setUserDetails({ ...userDetails, alternativecontactno: e.target.value })}
-             required
+             
            />
          </div>
          </div>
@@ -1086,9 +1086,9 @@ useEffect(() => {
          <select
            value={userDetails.identityproof}
            onChange={(e) => setUserDetails({ ...userDetails, identityproof: e.target.value })}
-           required
+           
          >
-           <option value="" disabled>Select Identity Proof </option>
+           <option value="" disabled>Select identity proof </option>
            <option value="aadharcard" >Aadhaar Card</option>
            <option value="pancard">Pan Card</option>
            <option value="drivinglicence">Driving Licence</option>
@@ -1102,7 +1102,7 @@ useEffect(() => {
              type="text"
              value={userDetails.identitynumber}
              onChange={(e) => setUserDetails({ ...userDetails, identitynumber: e.target.value })}
-             required
+             
            />
          </div>
          <div className="form-group1">
@@ -1110,9 +1110,9 @@ useEffect(() => {
          <select
            value={userDetails.source}
            onChange={(e) => setUserDetails({ ...userDetails, source: e.target.value })}
-           required
+           
          >
-          <option value="" disabled>Select The Source</option>
+          <option value="" disabled>Select the source</option>
            <option value="google" >Google</option>
            <option value="instagram" >Instagram</option>
            <option value="facebook" >Facebook</option>
@@ -1133,7 +1133,8 @@ useEffect(() => {
               onChange={(e) => setUserDetails({ ...userDetails, customerby: e.target.value })}
               required
             >
-              <option value="" disabled>Select Sub-User</option>
+              <option value="" disabled>Select customer by</option>
+              <option value="manager" >{userData.name}</option>
               {subUsers.map((subuser) => (
                 <option key={subuser.id} value={subuser.name}>
                   {subuser.name}
@@ -1148,7 +1149,8 @@ useEffect(() => {
               onChange={(e) => setUserDetails({ ...userDetails, receiptby: e.target.value })}
               required
             >
-              <option value="" disabled>Select Sub-User</option>
+              <option value="" disabled>Select receipt by</option>
+              <option value="manager" >{userData.name}</option>
               {subUsers.map((subuser) => (
                 <option key={subuser.id} value={subuser.name}>
                   {subuser.name}

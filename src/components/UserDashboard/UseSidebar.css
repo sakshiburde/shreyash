@@ -80,8 +80,8 @@
   
 }
 
-.sidebar-link.active {
-  background: #145FCE;
+.sidebar-link:active {
+  background: #e1d6f9;
   border-radius: 10px;
   
   

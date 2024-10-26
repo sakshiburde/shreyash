@@ -13,32 +13,35 @@
     .filter-container {
       display: flex;
       justify-content: center;
-      gap: 30px;
+      gap: 20px;
       margin: 20px 0;
     }
     
     .filter-container button {
       padding: 10px 20px;
-      background-color: #f0f0f0;
+      background-color: #F3EFFC;
       border: none;
       border-radius: 5px;
       color: #333;
-      font-size: 22px;
+      font-size: 16px;
+
       cursor: pointer;
       transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     .filter-container button:hover {
-      background-color: #333;
+      background-color: #e1d6f9;
       color: white;
     }
     
-    .filter-container button.active {
-      background-color: #007bff;
+    .filter-container button:active {
+      background-color: #e1d6f9;
       color: white;
     }
     
     .filter-container button:focus {
+      background-color: #e1d6f9;
+      color: #606060;
       outline: none;
     }
     
@@ -56,7 +59,7 @@
         overflow: hidden;
         width: 260px;
       }
-      
+    
       /* Styles for the search input */
       .search-bar-container9 input {
         padding: 10px;

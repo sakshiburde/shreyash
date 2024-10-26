@@ -90,7 +90,7 @@
      /* Rounded corners */
     padding: 10px 20px; /* Padding for the button */
     cursor: pointer; /* Pointer cursor on hover */
-    font-size: 16px; /* Font size */
+     /* Font size */
     margin-top: 33px;
     width: 265px;
     height: 42px;
@@ -103,6 +103,7 @@
 .availability1-toogle-button:hover {
    background: #164DC3; /* Darker shade on hover */
     transition: background-color 0.3s ease; /* Smooth transition */
+    color: #ffffff;
 }
   
   /* Form group section */
@@ -244,7 +245,15 @@
     border-radius: 5px;
     border-color: #FFFFFF;
 
+
     
+  }
+
+  .checkavailability11:hover{
+    color: #000000;
+    background-color: #EEEEEE;
+    border-radius: 5px;
+    border-color: #FFFFFF;
   }
   .mm{
     margin-top: 500px;
