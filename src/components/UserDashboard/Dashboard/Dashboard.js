@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '../../../firebaseConfig';  // Import the Firebase config file
+import { db } from '../../../firebaseConfig';
 import './Dahboard.css';
 import { useUser } from '../../Auth/UserContext';
 import UserHeader from '../../UserDashboard/UserHeader';
@@ -15,13 +15,14 @@ const Dashboard = () => {
   const [monthlyPickupPending, setMonthlyPickupPending] = useState(0);
   const [monthlyReturnPending, setMonthlyReturnPending] = useState(0);
   const [monthlySuccessful, setMonthlySuccessful] = useState(0);
-  const [monthlyTotalBookings, setMonthlyTotalBookings] = useState(0); // New state for total monthly bookings
+  const [monthlyTotalBookings, setMonthlyTotalBookings] = useState(0);
+  const [topProducts, setTopProducts] = useState([]); // State for top 5 products
   const [loading, setLoading] = useState(false);
   const { userData } = useUser();
 
   useEffect(() => {
     const fetchAllBookingsWithuserDetails = async () => {
-      setLoading(true); // Start loading
+      setLoading(true); 
       try {
         const q = query(
           collection(db, 'products'),
@@ -29,9 +30,11 @@ const Dashboard = () => {
         );
         const productsSnapshot = await getDocs(q);
         let allBookings = [];
+        const productBookingsCount = {}; // Object to store booking count per product
 
         for (const productDoc of productsSnapshot.docs) {
-          const productCode = productDoc.data().productCode;
+
+          const { productCode, productName, imageUrls } = productDoc.data();
           const bookingsRef = collection(productDoc.ref, 'bookings');
           const bookingsQuery = query(bookingsRef, orderBy('pickupDate', 'asc'));
           const bookingsSnapshot = await getDocs(bookingsQuery);
@@ -40,26 +43,43 @@ const Dashboard = () => {
             const bookingData = doc.data();
             allBookings.push({
               productCode,
+              productName,
               ...bookingData,
               pickupDate: bookingData.pickupDate.toDate(),
               returnDate: bookingData.returnDate.toDate(),
-              stage: bookingData.userDetails?.stage // Access the stage from userDetails
+              stage: bookingData.userDetails?.stage 
             });
+
+            // Count bookings per product
+            if (productBookingsCount[productCode]) {
+              productBookingsCount[productCode].count += 1;
+            } else {
+              productBookingsCount[productCode] = { count: 1, productName, imageUrls };
+            }
           });
         }
 
+        // Set all bookings and calculate stages
         setBookings(allBookings);
         calculateTodaysBookings(allBookings);
         calculateBookingStages(allBookings);
         calculateMonthlyBookings(allBookings);
+
+        // Sort products by booking count and set the top 5 products
+        const sortedProducts = Object.entries(productBookingsCount)
+          .sort(([, countA], [, countB]) => countB - countA) // Sort by count descending
+          .slice(0, 10) // Get top 10
+          .map(([productCode, { count, productName ,imageUrls}]) => ({ productCode, count, productName, imageUrls  })); // Map to an array of objects
+
+        setTopProducts(sortedProducts);
       } catch (error) {
         console.error('Error fetching bookings:', error);
       } finally {
-        setLoading(false); // End loading
+        setLoading(false); 
       }
     };
 
-    // Helper function to compare dates (ignoring time)
+    // Helper functions
     const isSameDay = (date1, date2) => {
       return (
         date1.getDate() === date2.getDate() &&
@@ -68,7 +88,6 @@ const Dashboard = () => {
       );
     };
 
-    // Helper function to get unique bookings by receiptNumber
     const getUniqueBookingsByReceiptNumber = (bookings) => {
       const uniqueBookings = new Set();
       return bookings.filter((booking) => {
@@ -90,22 +109,17 @@ const Dashboard = () => {
 
     const calculateBookingStages = (allBookings) => {
       const today = new Date();
-
       const uniqueBookings = getUniqueBookingsByReceiptNumber(allBookings);
-
-      // Today's bookings with pickup pending
       const pickupPending = uniqueBookings.filter((booking) => {
         const bookingPickupDate = new Date(booking.pickupDate);
         return booking.stage === 'pickupPending' && isSameDay(bookingPickupDate, today);
       }).length;
 
-      // Today's bookings with return pending
       const returnPending = uniqueBookings.filter((booking) => {
         const bookingReturnDate = new Date(booking.returnDate);
         return booking.stage === 'returnPending' && isSameDay(bookingReturnDate, today);
       }).length;
 
-      // Successful bookings (returned today)
       const successful = uniqueBookings.filter((booking) => {
         const bookingReturnDate = new Date(booking.returnDate);
         return booking.stage === 'return' && isSameDay(bookingReturnDate, today);
@@ -119,43 +133,26 @@ const Dashboard = () => {
     const calculateMonthlyBookings = (allBookings) => {
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
-
       const uniqueBookings = getUniqueBookingsByReceiptNumber(allBookings);
 
-      // Monthly pick-up pending
       const monthlyPickupPendingBookings = uniqueBookings.filter((booking) => {
         const pickupMonth = new Date(booking.pickupDate).getMonth();
         const pickupYear = new Date(booking.pickupDate).getFullYear();
-        return (
-          pickupMonth === currentMonth &&
-          pickupYear === currentYear &&
-          booking.stage === 'pickupPending'
-        );
+        return pickupMonth === currentMonth && pickupYear === currentYear && booking.stage === 'pickupPending';
       });
 
-      // Monthly return pending
       const monthlyReturnPendingBookings = uniqueBookings.filter((booking) => {
         const returnMonth = new Date(booking.returnDate).getMonth();
         const returnYear = new Date(booking.returnDate).getFullYear();
-        return (
-          returnMonth === currentMonth &&
-          returnYear === currentYear &&
-          booking.stage === 'returnPending'
-        );
+        return returnMonth === currentMonth && returnYear === currentYear && booking.stage === 'returnPending';
       });
 
-      // Monthly successful
       const monthlySuccessfulBookings = uniqueBookings.filter((booking) => {
         const returnMonth = new Date(booking.returnDate).getMonth();
         const returnYear = new Date(booking.returnDate).getFullYear();
-        return (
-          returnMonth === currentMonth &&
-          returnYear === currentYear &&
-          booking.stage === 'return'
-        );
+        return returnMonth === currentMonth && returnYear === currentYear && booking.stage === 'return';
       });
 
-      // Monthly total bookings
       const monthlyTotal = uniqueBookings.filter((booking) => {
         const pickupMonth = new Date(booking.pickupDate).getMonth();
         const pickupYear = new Date(booking.pickupDate).getFullYear();
@@ -164,7 +161,7 @@ const Dashboard = () => {
 
       setMonthlyPickupPending(monthlyPickupPendingBookings.length);
       setMonthlyReturnPending(monthlyReturnPendingBookings.length);
-      setMonthlyTotalBookings(monthlyTotal); 
+      setMonthlyTotalBookings(monthlyTotal);
       setMonthlySuccessful(monthlySuccessfulBookings.length);
     };
 
@@ -172,16 +169,14 @@ const Dashboard = () => {
   }, [userData.branchCode]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const handleSidebarToggle = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  const handleSidebarToggle = () => setSidebarOpen(!sidebarOpen);
 
   return (
     <div className={`dashboard-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
       <UserSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
       <div className="reports-container">
         <UserHeader onMenuClick={handleSidebarToggle} isSidebarOpen={sidebarOpen} />
-        <h2 style={{ marginTop: '30px' }}>Dashboard</h2>
+        {/* <h2 style={{ marginTop: '30px' }}>Dashboard</h2> */}
 
         <div className="sales-report">
           <h4>Daily Sales Report</h4>
@@ -202,9 +197,36 @@ const Dashboard = () => {
             <div className="card">Monthly Successful <br /> {monthlySuccessful}</div>
           </div>
         </div>
+
+        <div className="tble3">
+          <h4>Top Products </h4>
+          <table>
+          <thead>
+                <tr>
+                  <th>Sr. No</th>
+                  <th>Product Image</th>
+                  <th>Product Name</th>
+                  <th>Product Code</th>
+                  <th>Booking Count</th>
+                </tr>
+              </thead>
+              <tbody>
+            {topProducts.map((product, index) => (
+              <tr key={index}>
+                 <td>{index + 1}</td>
+                 <td><img src={product.imageUrls} style={{ width: '30px', height: '30px' }}/> </td>
+                 <td>{product.productName}</td>
+                 <td>{product.productCode}</td>
+                 <td>{product.count}</td>             
+              </tr>
+            ))}
+          </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+

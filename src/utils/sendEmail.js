@@ -31,7 +31,7 @@ export const sendPasswordResetEmailWithLink = async (email, resetLink) => {
 
   try {
     // Use a different EmailJS template for the password reset email
-    await emailjs.send('service_9lslyi2', 'template_password_reset', templateParams, '14_ths1xYdpFcvGAU');
+    await emailjs.send('service_9lslyi2', 'template_oal8w16', templateParams, '14_ths1xYdpFcvGAU');
     console.log('Password reset email sent successfully');
   } catch (error) {
     console.error('Error sending password reset email:', error);

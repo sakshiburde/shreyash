@@ -33,9 +33,9 @@ const Layout = () => {
       <div className='profile1'>
         <nav>
           <ul>
-            <NavigationItem to={isBranchManager ? "/overview" : "/profile"} label="Overview" />
+            <NavigationItem to={isBranchManager ? "/" : "/usersidebar/users"} label="Overview" />
 
-            <NavigationItem to={isSuperAdmin ? "/superadmin" : "/usersidebar/users"} label={isSuperAdmin ? "Super Admin" : "Create Users"} />
+            <NavigationItem to={isSuperAdmin ? "/superadmin" : "/profile"} label={isSuperAdmin ? "Super Admin" : "Create Users"} />
 
             {/* <NavigationItem to="/transaction" label="Transaction" /> */}
 

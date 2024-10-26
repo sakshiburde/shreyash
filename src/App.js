@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Auth/Login';
+import PrivateRoute from './components/Auth/PrivateRoute';
+import Dashboard from './components/UserDashboard/Dashboard/Dashboard';
 import ChangePassword from './components/Auth/ChangePassword';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import Welcome from './components/UserDashboard/UserDashboard';
@@ -13,7 +15,7 @@ import Customize from './components/Customize/Customize';
 import CreateSuperAdmin from './components/Profile/CreateSuperAdmin';
 import Profile from './components/Profile/Profile';
 import Layout from './components/Profile/Layout';
-import Lead from './components/./Leads/Addlead';
+import Lead from './components/Leads/Addlead';
 import EditLead from './components/Leads/EditLead';
 import { UserProvider } from './components/Auth/UserContext';
 import DetailsShared from './components/Leads/Leads';
@@ -35,67 +37,234 @@ import ClientLeads from './components/UserDashboard/Clienleads/Cleads';
 import EditProduct from './components/Product/EditProduct';
 import BookingDashboard from './components/UserDashboard/Availability/Availability';
 import ClientDashboard from './components/UserDashboard/Availability/ClientDetail';
-import Dashboard from './components/UserDashboard/Dashboard/Dashboard';
 import SingleComponent from './components/Profile/Profile';
 import Overview from './components/Profile/overview';
 import EditCLead from './components/UserDashboard/Clienleads/Editlead';
 import ForgotPassword from './components/Auth/ForgotPassword';
 import ProductReport from './components/UserDashboard/productreport';
 import BookingDetailsPage from './components/UserDashboard/Availability/BookingDetailsPage';
+
 const App = () => (
   <UserProvider>
-  <Router>
-    <Routes>
-      {/* Uncomment and use if you have a Landing component */}
-      {/* <Route path="/" element={<Landing />} /> */}
-      <Route path="/" element={<Login />} />
-      <Route path="/change-password" element={<ChangePassword />} />
-      <Route path="/branches" element={<AdminDashboard />} />
-      <Route path="/branches/active" element={<AdminDashboard />} />
-      <Route path="/branches/deactive" element={<AdminDashboard />} />
-      <Route path="/branches/expiring-soon" element={<AdminDashboard />} />
-      <Route path="/leads" element={<Leads />} />
-      <Route path="/welcome" element={<Welcome />} />
-      <Route path="/create-branch" element={<CreateBranch />} />
-      <Route path="/edit-branch/:id" element={<EditBranch />} />
-      
-      <Route path="/customize" element={<Customize />} />
-      <Route path="/active-log" element={<ActiveLog />} />
-      <Route path="/create-lead" element={<Lead />} />
-      <Route path="/edit-lead/:id" element={<EditLead />} />
-      <Route path="/leads/detail-shared" element={<DetailsShared />} />
-      <Route path="/leads/fresh-leads" element={<FreshLeads/>}/>
-      <Route path="/leads/demo-scheduled" element={<DemoScheduled />} />
-      <Route path="/leads/demo-done" element={<DemoDone />} />
-      <Route path="/leads/lead-won" element={<LeadWon />} />
-      <Route path="/leads/lead-lost" element={<LeadLost/>} />
-      <Route path="/usersidebar/users" element={<User />} />
-      <Route path="/adduser" element={<AddUser />} />
-      <Route path="/addproduct" element={<AddProduct />} />
-      <Route path="/productdashboard" element={<ProductDashboard />} />
-      <Route path="/usersidebar/availability" element={<Booking />} />
-      <Route path="/edituser/:id" element={<EditUser />} />
-      <Route path="/usersidebar/leads" element={<ClientLeadsDashboard/>}/>
-      <Route path="/addlead" element ={<ClientLeads/>}/>
-      <Route path="/editproduct/:productCode" element={<EditProduct />} />
-      <Route path="/usersidebar/billing" element={<BookingDashboard/>}/>
-      <Route path="/usersidebar/clients" element={<BookingDashboard/>}/>
-      <Route path="/usersidebar/dashboard" element={<Dashboard/>}/>
-      <Route path='/editclientlead/:id' element={<EditCLead/>}/>
-      <Route path="/forgot-password" element={<ForgotPassword/>}/>
-      <Route path ="/report" element={<ProductReport/>}/>
-      <Route path ="/booking-details/:receiptNumber" element={<BookingDetailsPage/>}/>
+    <Router>
+      <Routes>
+        {/* Public Route - Login Page */}
+        <Route path="/" element={<Login />} />
 
-      
-     
-      <Route path="/" element={<Layout />}>
-      <Route path="superadmin" element={<CreateSuperAdmin />} /> {/* Route for the LeadForm */}
-      <Route path="profile" element={<SingleComponent/>} />
-      <Route path="overview" element={<Overview/>} />
-    </Route>
-    </Routes>
-  </Router>
+        {/* Protected Routes */}
+        <Route path="/dashboard" element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/change-password" element={
+          <PrivateRoute>
+            <ChangePassword />
+          </PrivateRoute>
+        } />
+
+        <Route path="/branches" element={
+          <PrivateRoute>
+            <AdminDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/leads" element={
+          <PrivateRoute>
+            <Leads />
+          </PrivateRoute>
+        } />
+
+        <Route path="/welcome" element={
+          <PrivateRoute>
+            <Welcome />
+          </PrivateRoute>
+        } />
+
+        <Route path="/create-branch" element={
+          <PrivateRoute>
+            <CreateBranch />
+          </PrivateRoute>
+        } />
+
+        <Route path="/edit-branch/:id" element={
+          <PrivateRoute>
+            <EditBranch />
+          </PrivateRoute>
+        } />
+
+        <Route path="/customize" element={
+          <PrivateRoute>
+            <Customize />
+          </PrivateRoute>
+        } />
+
+        <Route path="/active-log" element={
+          <PrivateRoute>
+            <ActiveLog />
+          </PrivateRoute>
+        } />
+
+        <Route path="/create-lead" element={
+          <PrivateRoute>
+            <Lead />
+          </PrivateRoute>
+        } />
+
+        <Route path="/edit-lead/:id" element={
+          <PrivateRoute>
+            <EditLead />
+          </PrivateRoute>
+        } />
+
+        <Route path="/leads/detail-shared" element={
+          <PrivateRoute>
+            <DetailsShared />
+          </PrivateRoute>
+        } />
+
+        <Route path="/leads/fresh-leads" element={
+          <PrivateRoute>
+            <FreshLeads />
+          </PrivateRoute>
+        } />
+
+        <Route path="/leads/demo-scheduled" element={
+          <PrivateRoute>
+            <DemoScheduled />
+          </PrivateRoute>
+        } />
+
+        <Route path="/leads/demo-done" element={
+          <PrivateRoute>
+            <DemoDone />
+          </PrivateRoute>
+        } />
+
+        <Route path="/leads/lead-won" element={
+          <PrivateRoute>
+            <LeadWon />
+          </PrivateRoute>
+        } />
+
+        <Route path="/leads/lead-lost" element={
+          <PrivateRoute>
+            <LeadLost />
+          </PrivateRoute>
+        } />
+
+        <Route path="/usersidebar/users" element={
+          <PrivateRoute>
+            <User />
+          </PrivateRoute>
+        } />
+
+        <Route path="/adduser" element={
+          <PrivateRoute>
+            <AddUser />
+          </PrivateRoute>
+        } />
+
+        <Route path="/addproduct" element={
+          <PrivateRoute>
+            <AddProduct />
+          </PrivateRoute>
+        } />
+
+        <Route path="/productdashboard" element={
+          <PrivateRoute>
+            <ProductDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/usersidebar/availability" element={
+          <PrivateRoute>
+            <Booking />
+          </PrivateRoute>
+        } />
+
+        <Route path="/edituser/:id" element={
+          <PrivateRoute>
+            <EditUser />
+          </PrivateRoute>
+        } />
+
+        <Route path="/usersidebar/leads" element={
+          <PrivateRoute>
+            <ClientLeadsDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/addlead" element={
+          <PrivateRoute>
+            <ClientLeads />
+          </PrivateRoute>
+        } />
+
+        <Route path="/editproduct/:productCode" element={
+          <PrivateRoute>
+            <EditProduct />
+          </PrivateRoute>
+        } />
+
+        <Route path="/usersidebar/billing" element={
+          <PrivateRoute>
+            <BookingDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/usersidebar/dashboard" element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path='/editclientlead/:id' element={
+          <PrivateRoute>
+            <EditCLead />
+          </PrivateRoute>
+        } />
+
+        <Route path="/forgot-password" element={
+          <PrivateRoute>
+            <ForgotPassword />
+          </PrivateRoute>
+        } />
+
+        <Route path="/report" element={
+          <PrivateRoute>
+            <ProductReport />
+          </PrivateRoute>
+        } />
+
+        <Route path="/booking-details/:receiptNumber" element={
+          <PrivateRoute>
+            <BookingDetailsPage />
+          </PrivateRoute>
+        } />
+
+        {/* Nested Routes Example */}
+        <Route path="/" element={<Layout />}>
+          <Route path="superadmin" element={
+            <PrivateRoute>
+              <CreateSuperAdmin />
+            </PrivateRoute>
+          } />
+          <Route path="profile" element={
+            <PrivateRoute>
+              <SingleComponent />
+            </PrivateRoute>
+          } />
+          <Route path="overview" element={
+            <PrivateRoute>
+              <Overview />
+            </PrivateRoute>
+          } />
+        </Route>
+      </Routes>
+    </Router>
   </UserProvider>
-)
+);
 
 export default App;

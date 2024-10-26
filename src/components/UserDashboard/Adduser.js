@@ -124,7 +124,7 @@ const AddUser = () => {
       navigate('/usersidebar/users');
     } catch (error) {
       console.error('Error adding user:', error);
-      alert('Failed to add user');
+      alert('Failed to add user. Please check if the email ID is incorrect or already exists.');
     }
   };
 
