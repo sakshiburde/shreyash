@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation , useNavigate } from 'react-router-dom';
 import './UseSidebar.css';
 import { FaCalendarCheck, FaUsers, FaUser, FaPlusSquare, FaBoxOpen, FaRegFileAlt, FaMicrosoft, FaGift ,FaSignOutAlt  } from 'react-icons/fa';
- import user from '../../assets/user.png';
+
  import { useUser } from '../Auth/UserContext'; // Import the context
 
 const UserSidebar = ({ isOpen }) => {

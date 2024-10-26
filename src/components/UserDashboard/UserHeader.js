@@ -26,11 +26,11 @@ const UserHeader = ({ onMenuClick, isSidebarOpen }) => {
         <img
           src={profileIcon}
           alt="Profile"
-          onClick={() => navigate('/overview ')} // Navigate to the profile page
+          onClick={() => navigate('/overview')} // Navigate to the profile page
         />
       </div>
     </header>
   );
 };
 
-export default UserHeader; 
+export default UserHeader;
