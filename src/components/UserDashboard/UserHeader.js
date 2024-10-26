@@ -33,4 +33,4 @@ const UserHeader = ({ onMenuClick, isSidebarOpen }) => {
   );
 };
 
-export default UserHeader;
+export default UserHeader; 
